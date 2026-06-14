@@ -5,8 +5,8 @@ print("Connecting to Snowflake Cloud...")
 
 # Replace these with your actual details!
 conn = snowflake.connector.connect(
-    user='LONGNVB24',             # Usually the username you created (all caps or exact match)
-    password='Longntb24112003',         # Your Snowflake password
+    user='USER_NAME',             # Usually the username you created (all caps or exact match)
+    password='PASSWORD',         # Your Snowflake password
     account='KIZYOKO-XU04751',
     warehouse='FRAUD_WH',
     database='FRAUD_DB',
