@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy your AI models and API code into the container
 COPY models/ ./models/
-COPY api.py .
+COPY src/api.py .
 
 # 6. Open port 8000 for the outside world to communicate with the container
 EXPOSE 8000
