@@ -1,33 +1,95 @@
+***
+
 # 🛡️ FraudGuard: Real-Time Credit Card Fraud Detection System
 
-An end-to-end Machine Learning pipeline that detects credit card fraud in real-time. This project handles highly imbalanced data and simulates a production-grade banking environment using modern Data Engineering and MLOps tools.
+An Enterprise-grade, End-to-End Machine Learning and Data Engineering pipeline built to detect fraudulent credit card transactions in real-time. This project handles extreme data imbalance and simulates a production environment using modern MLOps and Big Data tools.
 
-## 🚀 Architecture & Tech Stack
-* **Machine Learning:** Scikit-Learn (Random Forest), SHAP (Explainable AI), Pandas
-* **Data Engineering:** Snowflake (Cloud Data Warehouse), Databricks/PySpark (Big Data ETL)
-* **Real-Time Streaming:** Apache Kafka (Confluent), Docker Compose
-* **API & Deployment:** FastAPI, Docker (Containerization)
-* **Frontend/Dashboard:** Streamlit
+## 🚀 System Architecture & Tech Stack
 
-## 🧠 The Machine Learning Model
-The dataset contains 284,807 transactions, but only **0.17% are fraudulent**. 
-To handle this extreme Data Imbalance:
-* Tested Logistic Regression (with class weights) and Random Forest.
-* Selected **Random Forest** due to its superior Precision-Recall balance.
-* **Explainability:** Implemented `SHAP` values to open the "black box", revealing that feature `V14` is the most critical indicator of fraud.
+The pipeline is designed with a Microservices architecture, separating storage, processing, inference, and UI.
 
-## ⚙️ System Workflow
-1. **Producer:** `kafka_producer.py` streams live transactions into Apache Kafka at 10 msgs/sec.
-2. **Streaming Engine:** Kafka acts as the high-speed message broker running in a Docker container.
-3. **Backend API:** FastAPI runs inside a Docker container, holding the trained Random Forest model in memory to score transactions in milliseconds.
-4. **Consumer UI:** A live Streamlit dashboard pulls from the Kafka stream, hits the API, and visualizes the results globally in real-time.
+*   **Machine Learning:** Scikit-Learn (Random Forest), SHAP (Explainable AI), Pandas.
+*   **Data Engineering:** Snowflake (Cloud Data Warehouse), Databricks & PySpark (Distributed ETL).
+*   **Real-Time Streaming:** Apache Kafka (Confluent Image), Docker Compose.
+*   **Backend API & MLOps:** FastAPI, Docker, Uvicorn.
+*   **Frontend / UI:** Streamlit (Hosted on Streamlit Community Cloud).
+*   **Cloud Deployment:** Render.com (API Hosting).
 
-## 📸 Demo
-*(Record a 15-second screen recording of your Streamlit live dashboard running, turn it into a GIF, and drag-and-drop it right here!)*
+## 📂 Project Structure
+```text
+FraudGuard_Project/
+├── data/
+│   └── creditcard.csv                 # Raw dataset (Ignored in Git)
+├── models/
+│   ├── random_forest_fraud_model.pkl  # Serialized trained model
+│   └── scaler.pkl                     # Serialized StandardScaler
+├── notebooks/
+│   └── 1_EDA.ipynb                    # EDA, Data Imbalance handling, Training
+├── src/
+│   ├── api.py                         # FastAPI backend service
+│   ├── test_snowflake.py              # Snowflake connection validation
+│   ├── kafka_producer.py              # Simulates live transaction stream
+│   └── kafka_consumer.py              # Consumes stream & hits Inference API
+├── frontend/
+│   ├── app.py                         # Streamlit Dashboard (Multi-tab UI)
+│   └── requirements.txt               # Lightweight dependencies for UI
+├── Dockerfile                         # API Containerization
+├── docker-compose.yml                 # Kafka Broker configuration
+├── requirements.txt                   # Backend/ML dependencies
+└── README.md                          # Project Documentation
+```
 
-## 🛠️ How to run locally
-1. **Start Kafka & API Containers:**
-   ```bash
-   docker-compose up -d
-   docker build -t fraud-api-image .
-   docker run -p 8080:8000 fraud-api-image
+## 🧠 Design Decisions & Trade-offs (For Code Review Context)
+
+1.  **Handling Data Imbalance (0.17% Fraud Rate):** 
+    *   Instead of blindly applying SMOTE (which can overfit), I utilized `RandomForestClassifier(class_weight='balanced')`. Random Forest provided a superior balance between Recall (catching frauds) and Precision (minimizing false positives/customer friction).
+2.  **Explainable AI (XAI):**
+    *   In fintech, "Black Box" models are non-compliant. I integrated `SHAP` values to explain feature importance, identifying `V14`, `V4`, and `V12` as the key drivers for fraud detection.
+3.  **Decoupled Architecture (Frontend vs Backend):**
+    *   The Streamlit UI and FastAPI backend have separate `requirements.txt` files. This prevents heavy ML libraries (like `scikit-learn` or `kafka-python`) from crashing the lightweight Streamlit Cloud container, ensuring fast UI deployments.
+4.  **Local to Cloud Migration:**
+    *   Initially developed using local CSVs and Pandas, the data layer was migrated to **Snowflake** for scalable cloud storage, and PySpark on **Databricks** for distributed big data processing logic.
+
+## 🛠️ How to Run Locally
+
+### 1. Setup Environment
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Start Kafka Streaming Engine
+```bash
+docker-compose up -d
+```
+
+### 3. Build & Run the API (Inference Engine)
+```bash
+docker build -t fraud-api .
+docker run -p 8080:8000 fraud-api
+```
+*API Docs will be available at: `http://localhost:8080/docs`*
+
+### 4. Run the Live Stream Simulation
+Open a new terminal and start the producer to send transactions to the Kafka broker:
+```bash
+python src/kafka_producer.py
+```
+Open another terminal to consume and evaluate them via the API:
+```bash
+python src/kafka_consumer.py
+```
+
+### 5. Start the Interactive Dashboard
+```bash
+pip install -r frontend/requirements.txt
+streamlit run frontend/app.py
+```
+
+## 🌐 Live Cloud Demo
+The system has been successfully deployed to the cloud:
+*   **Interactive UI (Streamlit):** https://fraudguardproject.streamlit.app/
+*   **API Documentation (Render):** https://fraudguard-project.onrender.com/docs
+
+***
