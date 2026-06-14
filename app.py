@@ -9,7 +9,7 @@ st.title("🛡️ FraudGuard - Real-Time Detection")
 st.write("Welcome to the Fraud Analyst Dashboard. Click a button below to simulate a transaction coming through the payment gateway.")
 
 # The URL of your FastAPI server
-API_URL = "http://127.0.0.1:8080/predict"
+API_URL = "https://fraudguard-project.onrender.com/predict"
 
 # Sample Data 1: A completely normal, safe transaction
 normal_tx = {
